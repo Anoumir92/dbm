@@ -17,7 +17,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            bottom: 20px;
+            
         }
 
         #player {
@@ -36,7 +36,7 @@
             background-color: #e74c3c;
             position: absolute;
             left: 100%;
-            bottom: 0;
+            bottom: 20px;
             animation: obstacleMove 3s linear infinite;
         }
 
@@ -228,7 +228,7 @@ const jumpSound = new Audio('effet sonore impact.mp3'); // Remplace 'lien_vers_t
 
 function jump() {
     if (!isGameOver) {
-        player.style.bottom = '0px';
+        player.style.bottom = '20px';
 
         // Jouer l'effet sonore
         jumpSound.play();
