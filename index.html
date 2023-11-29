@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Pixel', sans-serif;
+        }
+
+        #game-container {
+            height: 100vh;
+            background-color: #87CEEB; /* Couleur bleu clair */
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #player {
+            width: 20px;
+            height: 20px;
+            background-color: #3498db;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .obstacle {
+            width: 15px;
+            height: 15px;
+            background-color: #e74c3c;
+            position: absolute;
+            bottom: 0;
+            left: 100%;
+            animation: obstacleMove 3s linear infinite;
+        }
+
+        @keyframes obstacleMove {
+            to {
+                left: -15px;
+            }
+        }
+
+        #score {
+            position: absolute;
+            top: 20px;
+            font-size: 20px;
+            color: #333;
+        }
+
+        #best-score {
+            position: absolute;
+            top: 40px;
+            font-size: 16px;
+            color: #555;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  
+</head>
+<body>
+    <div id="game-container">
+        <div id="player"></div>
+        <div id="score">Score: 0</div>
+        <div id="best-score">Best Score: 0</div>
+        
+           </div>
+    
+ 
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            particlesJS('game-container', {
+                particles: {
+                    number: { value: 50 },
+                    color: { value: '#3498db' },
+                    shape: { type: 'circle' },
+                    opacity: { value: 0.6, random: true },
+                    size: { value: 3, random: true },
+                    move: { enable: true, speed: 2  , direction: 'bottom' },
+                },
+                interactivity: {
+                    detect_on: 'canvas',
+                    events: {
+                        onhover: { enable: false },
+                        onclick: { enable: false },
+                        resize: true,
+                    },
+                },
+            });
+
+            const gameContainer = document.getElementById('game-container');
+            const player = document.getElementById('player');
+            const scoreDisplay = document.getElementById('score');
+            const bestScoreDisplay = document.getElementById('best-score');
+
+            let isMovingLeft = false;
+            let isGameOver = false;
+            let score = 0;
+            let bestScore = getBestScore() || 0;
+
+            gameContainer.addEventListener('click', jump);
+            window.addEventListener('keydown', moveLeft);
+            window.addEventListener('keyup', stopMovingLeft);
+
+            function jump() {
+                if (!isGameOver) {
+                    player.style.bottom = '200px';
+                    setTimeout(() => {
+                        player.style.bottom = '0';
+                        checkCollision();
+                    }, 500);
+                }
+            }
+
+            function moveLeft(event) {
+                if (event.key === 'ArrowLeft' && !isGameOver) {
+                    isMovingLeft = true;
+                    checkCollision();
+                }
+            }
+
+            function stopMovingLeft(event) {
+                if (event.key === 'ArrowLeft') {
+                    isMovingLeft = false;
+                }
+            }
+
+            function checkCollision() {
+                if (isGameOver) return;
+
+                const playerRect = player.getBoundingClientRect();
+                const obstacles = document.querySelectorAll('.obstacle');
+
+                obstacles.forEach(obstacle => {
+                    const obstacleRect = obstacle.getBoundingClientRect();
+
+                    if (
+                        playerRect.bottom > obstacleRect.top &&
+                        playerRect.top < obstacleRect.bottom &&
+                        playerRect.right > obstacleRect.left &&
+                        playerRect.left < obstacleRect.right
+                    ) {
+                        gameOver();
+                    }
+                });
+            }
+
+            function gameOver() {
+                isGameOver = true;
+                alert('Game Over! Ton Score est : ' + score + ' : Part sur ma page tiktok Anoumir4k! ');
+
+                // Save best score
+                if (score > bestScore) {
+                    bestScore = score;
+                    saveBestScore(bestScore);
+                    updateBestScoreDisplay();
+                }
+
+                location.reload();
+            }
+
+            function createObstacle() {
+                if (!isGameOver) {
+                    const obstacle = document.createElement('div');
+                    obstacle.className = 'obstacle';
+                    gameContainer.appendChild(obstacle);
+                }
+            }
+
+            // Score update every 200ms
+            setInterval(updateScore, 200);
+
+            function updateScore() {
+                if (!isGameOver) {
+                    score++;
+                    scoreDisplay.textContent = 'Score: ' + score;
+                    checkCollision();
+                }
+            }
+
+            // Move player left
+            setInterval(movePlayerLeft, 20);
+
+            function movePlayerLeft() {
+                if (isMovingLeft && !isGameOver) {
+                    const playerLeft = parseInt(getComputedStyle(player).left);
+                    if (playerLeft > 0) {
+                        player.style.left = playerLeft - 5 + 'px';
+                        checkCollision();
+                    } else {
+                        gameOver();
+                    }
+                }
+            }
+
+            // Create obstacle every 2 seconds
+            setInterval(createObstacle, 2000);
+
+            // Display best score
+            updateBestScoreDisplay();
+
+            function updateBestScoreDisplay() {
+                bestScoreDisplay.textContent = 'Best Score: ' + bestScore;
+            }
+
+            // Local Storage functions for best score
+            function getBestScore() {
+                const storedBestScore = localStorage.getItem('bestScore');
+                return storedBestScore ? parseInt(storedBestScore) : null;
+            }
+
+            function saveBestScore(score) {
+                localStorage.setItem('bestScore', score);
+            }
+        });
+
+
+// Créer un élément audio pour l'effet sonore du saut
+const jumpSound = new Audio('effet sonore impact.mp3'); // Remplace 'lien_vers_ton_fichier_audio.mp3' par le chemin de ton fichier audio
+
+function jump() {
+    if (!isGameOver) {
+        player.style.bottom = '0px';
+
+        // Jouer l'effet sonore
+        jumpSound.play();
+
+        setTimeout(() => {
+            player.style.bottom = '0';
+            checkCollision();
+        }, 500);
+    }
+}
+
+
+
+
+    </script>
+</body>
+</html>
